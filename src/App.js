@@ -19,65 +19,94 @@ let styles = {
     fill: new Fill({
       color: 'rgba(0,0,255,0.1)',
     }),
-  }),  
+  }),
 };
 
-//stijl punten
-let puntStyle = new Style({
-  image: new CircleStyle({
-     radius: 5,
-     fill: new Fill({ color: "red"}),
-     stroke: new Stroke({
-         color: "black",
-         width: 2,
-     }),  
-  }),
-}); 
+//stijl punten secondary agglomerations
+function puntDorpStyle(feature) {
+  if (feature.get('juridical') == 'secondary agglomeration') {
+    return [new Style({
+      image: new CircleStyle({
+        radius: 3,
+        fill: new Fill({ color: "grey" }),
+        stroke: new Stroke({
+          color: "black",
+          width: 2,
+        }),
+      }),
+    })];
+  }
+}
+
+// stijl punten steden
+function puntStadStyle(feature) {
+  if (feature.get('juridical') == 'yes') {
+    return [new Style({
+      image: new CircleStyle({
+        radius: 5,
+        fill: new Fill({ color: "white" }),
+        stroke: new Stroke({
+          color: "black",
+          width: 2,
+        }),
+      }),
+    })];
+  }
+}
+
 
 const App = () => {
-  const [center, setCenter] = useState([  30.759620,  38.929473]);
+  const [center, setCenter] = useState([35.759620, 38.929473]);
   const [zoom, setZoom] = useState(6);
   const [showLayer1, setShowLayer1] = useState(true);
   const [showLayer2, setShowLayer2] = useState(true);
 
   return (
     <div>
-      <Map center={fromLonLat(center)} zoom={zoom}>
-        <Layers>
-          <TileLayer
-            source={osm()}
-            zIndex={0}
-          />
-          {showLayer1 && (
-            <VectorLayer
-              source={vector({ features: new GeoJSON().readFeatures(cities, { featureProjection: get('EPSG:3857') }) })}
-              style={puntStyle}
+      <div class="title">
+        <h1>Atlas of Roman Asia Minor</h1>
+        <h3>made by Rinse Willet</h3>
+      </div>
+      <div class="map-wrapper">
+        <Map center={fromLonLat(center)} zoom={zoom}>
+          <Layers>
+            <TileLayer
+              source={osm()}
+              zIndex={0}
             />
-          )}
-          {/* {showLayer2 && (
-            <VectorLayer
-              source={vector({ features: new GeoJSON().readFeatures(geojsonObject2, { featureProjection: get('EPSG:3857') }) })}
-              style={styles.MultiPolygon}
-            />
-          )} */}
-        </Layers>
-        <Controls>
-          <FullScreenControl />
-        </Controls>
-      </Map>
-      <div>
-        <input
-          type="checkbox"
-          checked={showLayer1}
-          onChange={event => setShowLayer1(event.target.checked)}
-        /> Cities and Villages of Roman Imperial times
-</div>
-      {/* <div>
-        <input
-          type="checkbox"
-          checked={showLayer2}
-          onChange={event => setShowLayer2(event.target.checked)}
-        /> Wyandotte County</div> */}
+            {showLayer1 && (
+              <VectorLayer
+                source={vector({ features: new GeoJSON().readFeatures(cities, { featureProjection: get('EPSG:3857') }) })}
+                style={puntStadStyle}
+              />
+            )}
+            {showLayer2 && (
+              <VectorLayer
+                source={vector({ features: new GeoJSON().readFeatures(cities, { featureProjection: get('EPSG:3857') }) })}
+                style={puntDorpStyle}
+              />
+            )}
+          </Layers>
+          <Controls>
+            <FullScreenControl />
+          </Controls>
+        </Map>
+      </div>
+      <div class="selector-wrapper">
+        <div>
+          <input
+            type="checkbox"
+            checked={showLayer1}
+            onChange={event => setShowLayer1(event.target.checked)}
+          /> Autonomous Cities of Roman Imperial times
+      </div>
+        <div>
+          <input
+            type="checkbox"
+            checked={showLayer2}
+            onChange={event => setShowLayer2(event.target.checked)}
+          /> Secondary agglomerations (subject towns and villages) of Roman Imperial times</div>
+      </div>
     </div>
   );
 }
